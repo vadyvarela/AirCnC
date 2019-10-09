@@ -1,0 +1,39 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const path = require('path');
+
+const socketio = require('socket.io');
+const http = require('http');
+
+const routes = require('./routes');
+
+const app = express();
+const server = http.Server(app);
+const io = socketio(server);
+
+io.on('connection', socket => {
+    console.log(socket.handshake.query);
+    console.log('Usuario Conectado', socket.id);
+});
+
+mongoose.Promise = global.Promise;
+
+// mongodb+srv://omnistack:omnistack@cluster0-gr6r3.mongodb.net/admin?retryWrites=true&w=majority
+// mongoose.connect('mongodb://localhost/semana09', {
+mongoose.connect('mongodb://localhost/semana09', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log("MongoDB Conectado...")
+}).catch((err) => {
+    console.log("Erro ao conectar! " + err);
+})
+
+app.use(cors());
+app.use(express.json());
+app.use(routes);
+app.use('/files', express.static(path.resolve(__dirname, '..', 'uploads')));
+
+server.listen(3333);
+
